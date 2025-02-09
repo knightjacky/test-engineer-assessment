@@ -1,0 +1,24 @@
+@import 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
+
+/* Custom styles */
+.container {
+  max-width: 1200px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+th {
+  background-color: #f9fafb;
+}
+
+tr:hover {
+  background-color: #f9fafb;
+}

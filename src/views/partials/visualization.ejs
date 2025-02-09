@@ -1,0 +1,88 @@
+<div class="space-y-8">
+  <% if (!data || data.length === 0) { %>
+    <div class="text-center py-8 text-gray-600">
+      <p>No financial data available. Please upload an Excel file and map the labels to see the visualization.</p>
+    </div>
+  <% } else { %>
+    <% 
+      // Group data by category
+      const categories = [...new Set(data.map(item => item.category))];
+      
+      // Get all unique period dates and sort them chronologically
+      const periods = [...new Set(data.map(item => item.period_date))].sort();
+
+      // Format currency function
+      const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(value);
+      };
+
+      // Format date function
+      const formatDate = (dateStr) => {
+        try {
+          const date = new Date(dateStr);
+          if (isNaN(date.getTime())) throw new Error('Invalid date');
+          return date.toLocaleDateString('en-US', { 
+            month: 'short',
+            year: 'numeric'
+          });
+        } catch (e) {
+          return dateStr; // Fallback to original string if parsing fails
+        }
+      };
+    %>
+
+    <% categories.forEach(category => { %>
+      <div class="space-y-4">
+        <h3 class="text-xl font-semibold text-gray-800 border-b pb-2"><%= category %></h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">
+                  Label
+                </th>
+                <% periods.forEach(period => { %>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <%= formatDate(period) %>
+                  </th>
+                <% }) %>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% 
+                // Get labels for this category
+                const categoryLabels = [...new Set(data
+                  .filter(item => item.category === category)
+                  .map(item => item.standard_label))];
+              %>
+              
+              <% categoryLabels.forEach(label => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-inherit">
+                    <%= label %>
+                  </td>
+                  <% periods.forEach(period => { %>
+                    <% 
+                      const value = data.find(item => 
+                        item.standard_label === label && 
+                        item.period_date === period
+                      )?.total_value || 0;
+                    %>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      <%= formatCurrency(value) %>
+                    </td>
+                  <% }) %>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>

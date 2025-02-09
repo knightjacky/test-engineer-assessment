@@ -1,0 +1,128 @@
+<div class="space-y-4">
+  <% if (error) { %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <h3 class="font-semibold mb-2">Custom Labels</h3>
+      <div class="space-y-2">
+        <% if (labels && labels.length > 0) { %>
+          <% 
+            // Group labels by category maintaining original order
+            const labelsByCategory = labels.reduce((acc, { label, category }) => {
+              if (!acc[category]) acc[category] = [];
+              acc[category].push(label);
+              return acc;
+            }, {});
+          %>
+          
+          <% Object.entries(labelsByCategory).forEach(([category, categoryLabels]) => { %>
+            <div class="mb-4">
+              <h4 class="text-sm font-medium text-gray-700 mb-2"><%= category %></h4>
+              <% categoryLabels.forEach(label => { %>
+                <% const isMapped = mappings && mappings.some(m => m.custom_label === label); %>
+                <div class="p-2 bg-gray-100 rounded flex justify-between items-center mb-1">
+                  <span><%= label %></span>
+                  <% if (isMapped) { %>
+                    <span class="text-green-600 text-sm">✓ Mapped</span>
+                  <% } %>
+                </div>
+              <% }); %>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <p class="text-gray-500">No labels available. Please upload an Excel file.</p>
+        <% } %>
+      </div>
+    </div>
+    
+    <div>
+      <h3 class="font-semibold mb-2">Standard Labels</h3>
+      <div class="space-y-2">
+        <% 
+          // Sort standard labels by category and then by label
+          const sortedStandardLabels = [...standardLabels].sort((a, b) => {
+            const catCompare = a.category.localeCompare(b.category);
+            return catCompare !== 0 ? catCompare : a.label.localeCompare(b.label);
+          });
+        %>
+        <% sortedStandardLabels.forEach(stdLabel => { %>
+          <div class="p-2 bg-gray-100 rounded">
+            <%= stdLabel.label %> (<%= stdLabel.category %>)
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <form hx-post="/mappings" 
+        hx-target="#mapping-container"
+        class="mt-4">
+    <h3 class="font-semibold mb-2">Create Mapping</h3>
+    <div class="space-y-2">
+      <select name="customLabel" required class="w-full p-2 border rounded">
+        <option value="">Select Custom Label</option>
+        <% if (labels) { %>
+          <% 
+            // Filter out mapped labels but maintain original order
+            const unmappedLabels = labels.filter(
+              ({ label }) => !mappings || !mappings.some(m => m.custom_label === label)
+            );
+          %>
+          <% unmappedLabels.forEach(({ label, category }) => { %>
+            <option value="<%= label %>"><%= label %> (<%= category %>)</option>
+          <% }) %>
+        <% } %>
+      </select>
+
+      <select name="standardLabelId" required class="w-full p-2 border rounded">
+        <option value="">Select Standard Label</option>
+        <% sortedStandardLabels.forEach(stdLabel => { %>
+          <option value="<%= stdLabel.id %>">
+            <%= stdLabel.label %> (<%= stdLabel.category %>)
+          </option>
+        <% }) %>
+      </select>
+
+      <button type="submit"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+        Add Mapping
+      </button>
+    </div>
+  </form>
+
+  <% if (mappings && mappings.length > 0) { %>
+    <div class="mt-4">
+      <h4 class="font-semibold mb-2">Current Mappings</h4>
+      <div class="space-y-2">
+        <% 
+          // Sort mappings by category and label
+          const sortedMappings = [...mappings].sort((a, b) => {
+            const catCompare = a.category.localeCompare(b.category);
+            return catCompare !== 0 ? catCompare : a.standard_label.localeCompare(b.standard_label);
+          });
+        %>
+        <% sortedMappings.forEach(mapping => { %>
+          <div class="flex items-center space-x-2 p-2 bg-gray-50 rounded">
+            <span class="font-medium">
+              <%= mapping.custom_label %> (<%= mapping.category %>)
+            </span>
+            <span class="text-gray-500">→</span>
+            <span><%= mapping.standard_label %> (<%= mapping.category %>)</span>
+            <form hx-delete="/mappings/<%= mapping.id %>"
+                  hx-target="#mapping-container"
+                  class="ml-auto">
+              <button type="submit" 
+                      class="text-red-600 hover:text-red-800">
+                Remove
+              </button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+</div>
