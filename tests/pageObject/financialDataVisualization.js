@@ -12,6 +12,7 @@ export default class FinancialDataVisualization {
     return this.page.locator(`//td[contains(text(), "${rowValue}")]/parent::tr/td`);
   }
   async getNormalizedText(locator) {
+    await locator.last().waitFor();
     const text = await locator.allTextContents();
     return text.map(value => value.replace(/\s+/g, ' ').trim());
   }
