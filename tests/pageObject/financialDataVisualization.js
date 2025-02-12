@@ -20,6 +20,7 @@ export default class FinancialDataVisualization {
   }
   async verifyMappedData(rowValue, array) {
     await expect(this.visualizationTableTitle).toBeVisible();
+    await this.page.waitForLoadState('networkidle');
     const values = await this.getNormalizedText(this.allValues(rowValue)); 
     await expect.soft(values).toEqual(array);
   }
