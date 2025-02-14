@@ -2,9 +2,9 @@ import { test, expect } from "@playwright/test";
 import PageObjectManager from "../pageObject/pageObjectManager";
 let poManager;
 
-test.beforeAll(async ({ browser, page }) => {
-  // const context = await browser.newContext();
-  // const page = await context.newPage();
+test.beforeAll(async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
   poManager = new PageObjectManager(page);
 });
 
