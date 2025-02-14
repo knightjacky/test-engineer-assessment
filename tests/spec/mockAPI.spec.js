@@ -1,5 +1,5 @@
 import { test, expect, request } from "@playwright/test";
-import tags from "../test-data/tags.json" assert { type: "json" };
+import tags from "../../test-data/tags.json" assert { type: "json" };
 test.beforeEach(async ({ page }) => {
   await page.route(
     //mock the server response
